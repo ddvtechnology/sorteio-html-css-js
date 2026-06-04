@@ -253,6 +253,7 @@
 
   function initFirebaseSync(handler) {
     if (!window.firebase || !window.firebase.database) {
+      setText("#panelSyncStatus", "Local");
       setText("#presentationSync", "Firebase indisponivel. Usando sincronizacao local.");
       return;
     }
@@ -263,6 +264,12 @@
       }
 
       firebaseStateRef = window.firebase.database().ref("eventos/" + eventId + "/state");
+      window.firebase.database().ref(".info/connected").on("value", function (snapshot) {
+        var connected = snapshot.val() === true;
+        setText("#panelSyncStatus", connected ? "Online Firebase" : "Reconectando...");
+        setText("#presentationSync", connected ? "Atualizacao online ativa - evento " + eventId : "Reconectando ao Firebase...");
+      });
+
       firebaseStateRef.on("value", function (snapshot) {
         var remoteState = snapshot.val();
 
@@ -276,12 +283,15 @@
         }
       }, function (error) {
         showToast("Erro no Firebase: " + error.message);
+        setText("#panelSyncStatus", "Erro Firebase");
         setText("#presentationSync", "Firebase sem permissao ou indisponivel");
       });
 
+      setText("#panelSyncStatus", "Online Firebase");
       setText("#presentationSync", "Atualizacao online ativa - evento " + eventId);
     } catch (error) {
       showToast("Erro ao iniciar Firebase: " + error.message);
+      setText("#panelSyncStatus", "Local");
       setText("#presentationSync", "Firebase indisponivel. Usando sincronizacao local.");
     }
   }

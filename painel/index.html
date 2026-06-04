@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Painel de controle do sistema de sorteio Mentes do Una Podcast.">
     <title>Painel de Controle | Mentes do Una Podcast</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <link rel="stylesheet" href="/assets/styles.css?v=20260604-firebase">
   </head>
   <body data-screen="panel">
     <main class="control-app">
@@ -33,7 +33,7 @@
               <span class="eyebrow">Opera&ccedil;&atilde;o</span>
               <h2>Sorteio atual</h2>
             </div>
-            <span class="status-pill">Local</span>
+            <span class="status-pill" id="panelSyncStatus">Conectando...</span>
           </div>
 
           <div class="last-number-box">
@@ -134,6 +134,6 @@
     <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-database-compat.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-    <script src="/assets/app.js"></script>
+    <script src="/assets/app.js?v=20260604-firebase"></script>
   </body>
 </html>
