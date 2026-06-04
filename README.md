@@ -16,8 +16,18 @@ Projeto estatico feito somente com HTML, CSS e JavaScript.
 - Placeholder elegante `LOGO` quando nenhuma imagem esta salva.
 - Aceita PNG, JPG, JPEG e SVG.
 - Sincronizacao entre telas via `BroadcastChannel` e evento `storage`.
+- Sincronizacao online entre dispositivos via Firebase Realtime Database.
 - Historico local e exportacao Excel via SheetJS em `.xlsx`, com fallback `.xls`.
 - Sem banco de dados, sem backend, sem framework e sem npm install.
+
+## Evento/sala
+
+Use o parametro `evento` para sincronizar dispositivos na mesma sala:
+
+- `/painel/?evento=mentes-do-una`
+- `/apresentacao/?evento=mentes-do-una`
+
+Se o parametro nao for informado, o app usa `mentes-do-una`.
 
 ## Deploy na Vercel
 

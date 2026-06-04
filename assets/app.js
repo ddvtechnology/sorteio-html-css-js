@@ -8,6 +8,16 @@
   var MAX_LOGO_SIZE = 2.5 * 1024 * 1024;
   var DEFAULT_LOGO_URL = "/assets/logo-mentes-do-una.png";
   var PLACEHOLDER_LOGO = "__placeholder__";
+  var DEFAULT_EVENT_ID = "mentes-do-una";
+  var FIREBASE_CONFIG = {
+    apiKey: "AIzaSyBT2npa2vaBPcZxYMRwj7qy-f-eHlBsNWQ",
+    authDomain: "mentes-do-una-sorteio.firebaseapp.com",
+    databaseURL: "https://mentes-do-una-sorteio-default-rtdb.firebaseio.com",
+    projectId: "mentes-do-una-sorteio",
+    storageBucket: "mentes-do-una-sorteio.firebasestorage.app",
+    messagingSenderId: "122823406657",
+    appId: "1:122823406657:web:9f0eec4bcf95784e2a02c0"
+  };
   var DEFAULT_STATE = {
     version: 2,
     eventName: "Mentes do Una Podcast",
@@ -41,6 +51,9 @@
   var spinningDrawId = null;
   var revealedDrawId = null;
   var lastSpinTick = 0;
+  var firebaseStateRef = null;
+  var applyingRemoteState = false;
+  var eventId = getEventId();
 
   try {
     channel = new BroadcastChannel(CHANNEL_NAME);
@@ -120,6 +133,20 @@
     };
   }
 
+  function getEventId() {
+    var params = new URLSearchParams(window.location.search);
+    var raw = params.get("evento") || params.get("event") || DEFAULT_EVENT_ID;
+    var normalized = raw
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9_-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80);
+
+    return normalized || DEFAULT_EVENT_ID;
+  }
+
   function readState() {
     try {
       var current = localStorage.getItem(STORAGE_KEY);
@@ -138,7 +165,17 @@
     return normalizeState(null);
   }
 
-  function writeState(nextState) {
+  function pushRemoteState(state) {
+    if (!firebaseStateRef || applyingRemoteState) {
+      return;
+    }
+
+    firebaseStateRef.set(state).catch(function (error) {
+      showToast("Nao foi possivel sincronizar com o Firebase: " + error.message);
+    });
+  }
+
+  function writeState(nextState, options) {
     var normalized = normalizeState(nextState);
     normalized.updatedAt = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
@@ -146,6 +183,10 @@
 
     if (channel) {
       channel.postMessage({ type: "state-updated", updatedAt: normalized.updatedAt });
+    }
+
+    if (!options || !options.skipRemote) {
+      pushRemoteState(normalized);
     }
 
     return normalized;
@@ -181,6 +222,68 @@
     }
 
     window.setInterval(renderFromStorage, 900);
+  }
+
+  function applyRemoteState(remoteState, handler) {
+    var normalized = normalizeState(remoteState);
+
+    if (normalized.updatedAt === readState().updatedAt) {
+      return;
+    }
+
+    applyingRemoteState = true;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+    applyingRemoteState = false;
+    lastSeenUpdate = normalized.updatedAt;
+
+    if (channel) {
+      channel.postMessage({ type: "state-updated", updatedAt: normalized.updatedAt });
+    }
+
+    handler(normalized);
+  }
+
+  function hydrateEventLinks() {
+    document.querySelectorAll('a[href^="/painel/"], a[href^="/apresentacao/"]').forEach(function (link) {
+      var url = new URL(link.getAttribute("href"), window.location.origin);
+      url.searchParams.set("evento", eventId);
+      link.href = url.pathname + url.search;
+    });
+  }
+
+  function initFirebaseSync(handler) {
+    if (!window.firebase || !window.firebase.database) {
+      setText("#presentationSync", "Firebase indisponivel. Usando sincronizacao local.");
+      return;
+    }
+
+    try {
+      if (!window.firebase.apps.length) {
+        window.firebase.initializeApp(FIREBASE_CONFIG);
+      }
+
+      firebaseStateRef = window.firebase.database().ref("eventos/" + eventId + "/state");
+      firebaseStateRef.on("value", function (snapshot) {
+        var remoteState = snapshot.val();
+
+        if (remoteState) {
+          applyRemoteState(remoteState, handler);
+          return;
+        }
+
+        if (screen === "panel") {
+          pushRemoteState(readState());
+        }
+      }, function (error) {
+        showToast("Erro no Firebase: " + error.message);
+        setText("#presentationSync", "Firebase sem permissao ou indisponivel");
+      });
+
+      setText("#presentationSync", "Atualizacao online ativa - evento " + eventId);
+    } catch (error) {
+      showToast("Erro ao iniciar Firebase: " + error.message);
+      setText("#presentationSync", "Firebase indisponivel. Usando sincronizacao local.");
+    }
   }
 
   function rangeTotal(state) {
@@ -464,6 +567,7 @@
 
   function initHome() {
     ensureInitialState();
+    hydrateEventLinks();
 
     function render(state) {
       document.querySelectorAll("[data-event-name]").forEach(function (element) {
@@ -474,11 +578,13 @@
 
     lastSeenUpdate = readState().updatedAt;
     render(readState());
+    initFirebaseSync(render);
     sync(render);
   }
 
   function initPanel() {
     ensureInitialState();
+    hydrateEventLinks();
 
     var elements = {
       drawButton: document.getElementById("drawButton"),
@@ -714,6 +820,7 @@
 
     lastSeenUpdate = readState().updatedAt;
     render(readState());
+    initFirebaseSync(render);
     sync(render);
   }
 
@@ -908,10 +1015,12 @@
     });
 
     ensureInitialState();
+    hydrateEventLinks();
     updateClock();
     window.setInterval(updateClock, 1000);
     lastSeenUpdate = readState().updatedAt;
     renderPresentation(readState());
+    initFirebaseSync(renderPresentation);
     sync(renderPresentation);
   }
 
