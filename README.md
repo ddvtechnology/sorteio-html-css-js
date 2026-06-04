@@ -17,6 +17,7 @@ Projeto estatico feito somente com HTML, CSS e JavaScript.
 - Aceita PNG, JPG, JPEG e SVG.
 - Sincronizacao entre telas via `BroadcastChannel` e evento `storage`.
 - Sincronizacao online entre dispositivos via Firebase Realtime Database.
+- Animacao de suspense na tela de apresentacao antes de revelar o numero.
 - Historico local e exportacao Excel via SheetJS em `.xlsx`, com fallback `.xls`.
 - Sem banco de dados, sem backend, sem framework e sem npm install.
 

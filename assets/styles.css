@@ -701,7 +701,54 @@ h2 {
   box-shadow: var(--shadow);
 }
 
+.draw-stage::before,
+.draw-stage::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms ease;
+}
+
+.draw-stage::before {
+  inset: -20%;
+  background:
+    radial-gradient(circle at center, rgba(246, 192, 79, 0.28), transparent 22%),
+    conic-gradient(from 0deg, transparent 0deg, rgba(88, 199, 243, 0.22) 70deg, transparent 140deg, rgba(246, 192, 79, 0.22) 230deg, transparent 320deg);
+  filter: blur(22px);
+}
+
+.draw-stage::after {
+  inset: 0;
+  background: linear-gradient(105deg, transparent 0%, transparent 38%, rgba(255, 255, 255, 0.16) 50%, transparent 62%, transparent 100%);
+  transform: translateX(-110%);
+}
+
+.draw-stage.is-spinning {
+  border-color: rgba(246, 192, 79, 0.52);
+  box-shadow:
+    0 0 0 1px rgba(246, 192, 79, 0.18),
+    0 0 48px rgba(246, 192, 79, 0.16),
+    var(--shadow);
+}
+
+.draw-stage.is-spinning::before {
+  opacity: 1;
+  animation: suspense-rotate 2.1s linear infinite;
+}
+
+.draw-stage.is-spinning::after {
+  opacity: 1;
+  animation: suspense-sweep 1.15s ease-in-out infinite;
+}
+
+.draw-stage.is-revealed {
+  animation: reveal-stage 880ms ease-out;
+}
+
 .stage-label {
+  position: relative;
+  z-index: 1;
   margin-bottom: clamp(8px, 1vw, 20px);
   color: var(--sky);
   font-size: clamp(1rem, 1.1vw, 1.45rem);
@@ -710,7 +757,15 @@ h2 {
   text-transform: uppercase;
 }
 
+.stage-label.is-spinning {
+  color: var(--gold);
+  text-shadow: 0 0 22px rgba(246, 192, 79, 0.38);
+  animation: suspense-label 760ms ease-in-out infinite alternate;
+}
+
 .draw-number-display {
+  position: relative;
+  z-index: 1;
   max-width: 100%;
   color: var(--white);
   font-size: clamp(8rem, 23vw, 32rem);
@@ -724,13 +779,26 @@ h2 {
 
 .draw-number-display.is-spinning {
   color: var(--gold);
-  animation: pulse-number 420ms ease-in-out infinite alternate;
+  text-shadow:
+    0 0 24px rgba(246, 192, 79, 0.44),
+    0 24px 60px rgba(0, 0, 0, 0.44);
+  animation: suspense-number 260ms steps(2, end) infinite;
+}
+
+.draw-number-display.is-revealed {
+  animation: reveal-number 980ms cubic-bezier(0.18, 0.89, 0.32, 1.28);
 }
 
 .draw-date {
+  position: relative;
+  z-index: 1;
   margin-top: clamp(16px, 1.8vw, 30px);
   font-size: clamp(1rem, 1.15vw, 1.55rem);
   font-weight: 780;
+}
+
+.draw-date.is-spinning {
+  color: rgba(247, 251, 255, 0.72);
 }
 
 .spin-track {
@@ -752,7 +820,7 @@ h2 {
 }
 
 .draw-stage.is-spinning .spin-track span {
-  animation: spin-progress 3.2s linear forwards;
+  animation: spin-progress 5.2s linear forwards;
 }
 
 .presentation-history-panel {
@@ -782,23 +850,85 @@ h2 {
   font-weight: 760;
 }
 
-@keyframes pulse-number {
-  from {
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-  to {
-    transform: translateY(-3px) scale(1.01);
-    filter: blur(1px);
-  }
-}
-
 @keyframes spin-progress {
   from {
     width: 0%;
   }
   to {
     width: 100%;
+  }
+}
+
+@keyframes suspense-number {
+  0% {
+    transform: translateY(0) scale(1);
+    filter: blur(0.3px);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.018);
+    filter: blur(1.6px);
+  }
+  100% {
+    transform: translateY(3px) scale(1.006);
+    filter: blur(0.8px);
+  }
+}
+
+@keyframes suspense-label {
+  from {
+    opacity: 0.72;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes suspense-rotate {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(360deg) scale(1.04);
+  }
+}
+
+@keyframes suspense-sweep {
+  0% {
+    transform: translateX(-115%);
+  }
+  100% {
+    transform: translateX(115%);
+  }
+}
+
+@keyframes reveal-number {
+  0% {
+    transform: scale(0.82);
+    color: var(--gold);
+    filter: blur(4px);
+  }
+  58% {
+    transform: scale(1.08);
+    color: var(--white);
+    filter: blur(0);
+  }
+  100% {
+    transform: scale(1);
+    color: var(--white);
+  }
+}
+
+@keyframes reveal-stage {
+  0% {
+    box-shadow: 0 0 0 0 rgba(246, 192, 79, 0.40), var(--shadow);
+  }
+  55% {
+    box-shadow: 0 0 0 14px rgba(246, 192, 79, 0.0), 0 0 70px rgba(88, 199, 243, 0.24), var(--shadow);
+  }
+  100% {
+    box-shadow: var(--shadow);
   }
 }
 

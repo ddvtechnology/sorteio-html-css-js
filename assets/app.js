@@ -4,7 +4,7 @@
   var STORAGE_KEY = "mentes-do-una-sorteio-state-v2";
   var LEGACY_STORAGE_KEY = "sorteio-numeros-local-state-v1";
   var CHANNEL_NAME = "mentes-do-una-sorteio-channel";
-  var ANIMATION_MS = 3200;
+  var ANIMATION_MS = 5200;
   var MAX_LOGO_SIZE = 2.5 * 1024 * 1024;
   var DEFAULT_LOGO_URL = "/assets/logo-mentes-do-una.png";
   var PLACEHOLDER_LOGO = "__placeholder__";
@@ -48,6 +48,7 @@
   var toastTimer = null;
   var spinFrame = null;
   var spinTimer = null;
+  var revealFlashTimer = null;
   var spinningDrawId = null;
   var revealedDrawId = null;
   var lastSpinTick = 0;
@@ -850,8 +851,18 @@
     }
   }
 
+  function setRevealFlash(active) {
+    var number = document.getElementById("presentationNumber");
+    var stage = number ? number.closest(".draw-stage") : null;
+    if (stage) {
+      stage.classList.toggle("is-revealed", active);
+    }
+  }
+
   function stopSpin() {
     var number = document.getElementById("presentationNumber");
+    var label = document.getElementById("presentationStageLabel");
+    var time = document.getElementById("presentationDrawTime");
 
     if (spinFrame) {
       window.cancelAnimationFrame(spinFrame);
@@ -863,12 +874,25 @@
       spinTimer = null;
     }
 
+    if (revealFlashTimer) {
+      window.clearTimeout(revealFlashTimer);
+      revealFlashTimer = null;
+    }
+
     spinningDrawId = null;
     lastSpinTick = 0;
     setSpinProgress(false);
 
     if (number) {
       number.classList.remove("is-spinning");
+    }
+
+    if (label) {
+      label.classList.remove("is-spinning");
+    }
+
+    if (time) {
+      time.classList.remove("is-spinning");
     }
   }
 
@@ -893,13 +917,23 @@
 
     if (number) {
       number.textContent = formatNumber(draw.number);
+      number.classList.add("is-revealed");
+      revealFlashTimer = window.setTimeout(function () {
+        number.classList.remove("is-revealed");
+        setRevealFlash(false);
+      }, 1200);
     }
 
     if (label) {
       label.textContent = "Numero sorteado";
+      label.classList.remove("is-spinning");
     }
 
+    setRevealFlash(true);
     updateTimeElement(time, draw.drawnAt, "Sorteado em " + formatDateTime(draw.drawnAt));
+    if (time) {
+      time.classList.remove("is-spinning");
+    }
   }
 
   function startPresentationSpin(draw, state) {
@@ -916,20 +950,25 @@
 
     if (number) {
       number.classList.add("is-spinning");
+      number.classList.remove("is-revealed");
     }
 
     if (label) {
-      label.textContent = "Sorteando...";
+      label.textContent = "Sorteando... suspense no ar";
+      label.classList.add("is-spinning");
     }
 
     updateTimeElement(time, draw.drawnAt, "Preparando resultado");
+    if (time) {
+      time.classList.add("is-spinning");
+    }
 
     function tick(timestamp) {
       if (!spinningDrawId || spinningDrawId !== draw.id) {
         return;
       }
 
-      if (!lastSpinTick || timestamp - lastSpinTick > 54) {
+      if (!lastSpinTick || timestamp - lastSpinTick > 42) {
         lastSpinTick = timestamp;
         if (number) {
           number.textContent = formatNumber(randomInRange(state));
