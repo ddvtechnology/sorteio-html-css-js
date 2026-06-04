@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Painel de controle do sistema de sorteio Mentes do Una Podcast.">
+    <title>Painel de Controle | Mentes do Una Podcast</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body data-screen="panel">
+    <main class="control-app">
+      <header class="app-header">
+        <div class="header-brand">
+          <div class="brand-logo" data-logo-slot aria-label="Logo do evento">
+            <span>LOGO</span>
+          </div>
+          <div class="title-block">
+            <span class="eyebrow">Painel de Controle</span>
+            <h1 data-event-name>Mentes do Una Podcast</h1>
+          </div>
+        </div>
+
+        <nav class="top-actions" aria-label="A&ccedil;&otilde;es principais">
+          <a class="button button-secondary" href="/apresentacao/" target="_blank" rel="noreferrer">Tela de Apresenta&ccedil;&atilde;o</a>
+          <button class="button button-primary" id="settingsButton" type="button">Configura&ccedil;&otilde;es</button>
+        </nav>
+      </header>
+
+      <section class="control-grid">
+        <div class="panel-card operator-panel">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Opera&ccedil;&atilde;o</span>
+              <h2>Sorteio atual</h2>
+            </div>
+            <span class="status-pill">Local</span>
+          </div>
+
+          <div class="last-number-box">
+            <span>&Uacute;ltimo n&uacute;mero sorteado</span>
+            <strong id="lastNumber">--</strong>
+            <time id="lastDrawTime" datetime="">Aguardando primeiro sorteio</time>
+          </div>
+
+          <button class="draw-button" id="drawButton" type="button">Sortear N&uacute;mero</button>
+
+          <div class="metric-strip" aria-label="Resumo do sorteio">
+            <div class="metric">
+              <span>Restantes</span>
+              <strong id="remainingCount">1000</strong>
+            </div>
+            <div class="metric">
+              <span>Sorteados</span>
+              <strong id="drawnCount">0</strong>
+            </div>
+            <div class="metric">
+              <span>Faixa</span>
+              <strong id="rangeSummary">1-1000</strong>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="tool-button tool-warning" id="restartButton" type="button">Reiniciar sorteio</button>
+            <button class="tool-button tool-danger" id="clearHistoryButton" type="button">Limpar hist&oacute;rico</button>
+            <button class="tool-button tool-info" id="exportButton" type="button">Exportar Excel</button>
+          </div>
+        </div>
+
+        <div class="panel-card history-panel">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Registro local</span>
+              <h2>Hist&oacute;rico dos sorteios</h2>
+            </div>
+            <span class="count-badge" id="historyCount">0 itens</span>
+          </div>
+
+          <ol class="history-list control-history" id="historyList" aria-live="polite"></ol>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="settings-dialog" id="settingsDialog">
+      <form id="settingsForm" method="dialog">
+        <div class="dialog-head">
+          <div>
+            <span class="eyebrow">Prefer&ecirc;ncias</span>
+            <h2>Configura&ccedil;&otilde;es do sorteio</h2>
+          </div>
+          <button class="icon-button" id="closeSettingsButton" type="button" aria-label="Fechar configura&ccedil;&otilde;es">&times;</button>
+        </div>
+
+        <label class="field">
+          <span>Nome do evento</span>
+          <input id="eventNameInput" name="eventName" type="text" maxlength="100" autocomplete="off">
+        </label>
+
+        <div class="form-grid">
+          <label class="field">
+            <span>N&uacute;mero inicial</span>
+            <input id="rangeStartInput" name="rangeStart" type="number" step="1" required>
+          </label>
+          <label class="field">
+            <span>N&uacute;mero final</span>
+            <input id="rangeEndInput" name="rangeEnd" type="number" step="1" required>
+          </label>
+        </div>
+
+        <div class="logo-config">
+          <div class="brand-logo brand-logo-large" id="logoPreview" aria-label="Pr&eacute;via da logo">
+            <span>LOGO</span>
+          </div>
+          <div class="logo-config-actions">
+            <label class="file-button">
+              Trocar logo
+              <input id="logoInput" type="file" accept="image/png,image/jpeg,image/jpg,image/svg+xml">
+            </label>
+            <button class="button button-secondary" id="removeLogoButton" type="button">Usar placeholder LOGO</button>
+            <p>Aceita PNG, JPG, JPEG e SVG. Fundo transparente recomendado para melhor resultado.</p>
+          </div>
+        </div>
+
+        <p class="form-hint">Os dados ficam somente neste navegador. Abra a apresenta&ccedil;&atilde;o em outra aba ou tela para sincronizar automaticamente.</p>
+        <p class="form-error" id="settingsError" role="alert"></p>
+
+        <menu class="dialog-actions">
+          <button class="button button-secondary" id="cancelSettingsButton" type="button">Cancelar</button>
+          <button class="button button-primary" type="submit">Salvar configura&ccedil;&otilde;es</button>
+        </menu>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="/assets/app.js"></script>
+  </body>
+</html>
